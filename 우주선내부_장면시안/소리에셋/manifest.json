@@ -1,0 +1,41 @@
+{
+  "license": "Pixabay Content License",
+  "method": "IAB Free download UI",
+  "format": "mono 24kHz 96kbps MP3",
+  "files": [
+    {
+      "file": "cabin_hum.mp3",
+      "title": "Interior Spaceship",
+      "author": "SoundsOdd (Freesound) / freesound_community",
+      "url": "https://pixabay.com/sound-effects/film-special-effects-interior-spaceship-19828/",
+      "source_file": "원본/freesound_community-interior-spaceship-19828.mp3",
+      "source_duration": 67.2,
+      "runtime_duration": 20.0,
+      "edits": "5–26秒 excerpt, 1s wrap crossfade; resulting 20s loop",
+      "peak": 0.8500000000000001
+    },
+    {
+      "file": "star_whoosh.mp3",
+      "title": "Cinematic Designed Sci-Fi Whoosh - Transition - NexaWave",
+      "author": "RescopicSound",
+      "url": "https://pixabay.com/sound-effects/film-special-effects-cinematic-designed-sci-fi-whoosh-transition-nexawave-228295/",
+      "source_file": "원본/rescopicsound-cinematic-designed-sci-fi-whoosh-transition-nexawave-228295.mp3",
+      "source_duration": 14.808,
+      "runtime_duration": 3.0,
+      "edits": "3s excerpt from 0.591s; fade in/out",
+      "peak": 0.8500000238418579
+    },
+    {
+      "file": "console_beep.mp3",
+      "title": "UI Beep - Confirmation",
+      "author": "RescopicSound",
+      "url": "https://pixabay.com/sound-effects/film-special-effects-ui-beep-confirmation-228332/",
+      "source_file": "원본/rescopicsound-ui-beep-confirmation-228332.mp3",
+      "source_duration": 1.248,
+      "runtime_duration": 1.2,
+      "edits": "Up to1.2s, short fade in/out",
+      "peak": 0.8499999642372131
+    }
+  ],
+  "preview": "12s example mix. Game not modified."
+}

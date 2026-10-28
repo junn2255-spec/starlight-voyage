@@ -1,0 +1,73 @@
+{
+  "image_count": 28,
+  "audio_count": 13,
+  "source_bytes": 11304050,
+  "runtime_bytes": 2146962,
+  "audio": {
+    "music": {
+      "url": "runtime/music.mp3",
+      "duration": 59.5,
+      "loop": true
+    },
+    "wind": {
+      "url": "runtime/wind.mp3",
+      "duration": 16.5,
+      "loop": true
+    },
+    "hum": {
+      "url": "runtime/hum.mp3",
+      "duration": 12.5,
+      "loop": true
+    },
+    "click": {
+      "url": "runtime/click.mp3",
+      "duration": 0.5,
+      "loop": false
+    },
+    "door": {
+      "url": "runtime/door.mp3",
+      "duration": 3.2,
+      "loop": false
+    },
+    "engine": {
+      "url": "runtime/engine.mp3",
+      "duration": 4.0,
+      "loop": false
+    },
+    "takeoff": {
+      "url": "runtime/takeoff.mp3",
+      "duration": 4.5,
+      "loop": false
+    },
+    "arrival": {
+      "url": "runtime/arrival.mp3",
+      "duration": 3.0,
+      "loop": false
+    },
+    "step1": {
+      "url": "runtime/step1.mp3",
+      "duration": 0.38,
+      "loop": false
+    },
+    "step2": {
+      "url": "runtime/step2.mp3",
+      "duration": 0.38,
+      "loop": false
+    },
+    "step3": {
+      "url": "runtime/step3.mp3",
+      "duration": 0.38,
+      "loop": false
+    },
+    "metal1": {
+      "url": "runtime/metal1.mp3",
+      "duration": 0.38,
+      "loop": false
+    },
+    "metal2": {
+      "url": "runtime/metal2.mp3",
+      "duration": 0.38,
+      "loop": false
+    }
+  }
+}

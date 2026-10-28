@@ -1,0 +1,9 @@
+확정 시안
+- 별빛 항해: 첫 번째 시안 A_별빛항해_금빛모험.png
+- 지구 3050년: 두 번째 시안 B_지구3050년_미래도시.png
+
+사용자 요청에 따라 좌측 상단에 크게 배치.
+원본 PNG: 게임/assets/stage01/ui/confirmed/
+실행용: title_starlight.webp (1200×544), title_earth3050.webp (900×364)
+실행용 두 이미지 합계 약 336KB. 투명도 보존, 불필요한 외곽 여백 축소.
+재생성 스크립트: 에셋/apply_confirmed_titles.py

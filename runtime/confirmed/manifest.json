@@ -1,0 +1,20 @@
+[
+  {
+    "source": "A_별빛항해_금빛모험.png",
+    "file": "runtime/confirmed/title_starlight.webp",
+    "size": [
+      1200,
+      544
+    ],
+    "bytes": 215454
+  },
+  {
+    "source": "B_지구3050년_미래도시.png",
+    "file": "runtime/confirmed/title_earth3050.webp",
+    "size": [
+      900,
+      364
+    ],
+    "bytes": 128400
+  }
+]

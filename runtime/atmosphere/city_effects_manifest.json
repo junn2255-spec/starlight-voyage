@@ -1,0 +1,34 @@
+{
+  "bg_city_clean": {
+    "file": "bg_city_clean.webp",
+    "size": [
+      1600,
+      900
+    ],
+    "bytes": 314712
+  },
+  "bg_boarding_clean": {
+    "file": "bg_boarding_clean.webp",
+    "size": [
+      1600,
+      900
+    ],
+    "bytes": 353106
+  },
+  "billow_cloud": {
+    "file": "billow_cloud.webp",
+    "size": [
+      512,
+      376
+    ],
+    "bytes": 46420
+  },
+  "title_no_stars": {
+    "file": "title_no_stars.webp",
+    "size": [
+      1200,
+      544
+    ],
+    "bytes": 159164
+  }
+}

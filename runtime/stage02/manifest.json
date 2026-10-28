@@ -1,0 +1,35 @@
+{
+  "license": "Pixabay Content License",
+  "download_method": "Pixabay UI Free download via IAB",
+  "sources": [
+    {
+      "file": "landing_source.mp3",
+      "original": "kalsstockmedia-creaky-thunderous-scifi-spaceship-landing-341621.mp3",
+      "author": "kalsstockmedia",
+      "url": "https://pixabay.com/sound-effects/film-special-effects-creaky-thunderous-scifi-spaceship-landing-341621/"
+    },
+    {
+      "file": "door_source.mp3",
+      "original": "freesound_community-spaceship-door-opening-43604.mp3",
+      "author": "MarcusGraham325 (Freesound) / freesound_community",
+      "url": "https://pixabay.com/sound-effects/film-special-effects-spaceship-door-opening-43604/"
+    },
+    {
+      "file": "wind_source.mp3",
+      "original": "tanweraman-desert-wind-2-350417.mp3",
+      "author": "TanwerAman",
+      "url": "https://pixabay.com/sound-effects/nature-desert-wind-2-350417/"
+    }
+  ],
+  "runtime_audio": {
+    "descent": "0–6s landing source; fade out",
+    "touchdown": "5.8–7.1s landing source",
+    "door_open": "first 2s, padded if needed",
+    "desert_wind": "3–21s, fade in/out"
+  },
+  "images": {
+    "landing_ground.webp": "1600x900 WebP quality86; generated blank landing background",
+    "ship": "existing stage01 closed/open files unchanged",
+    "hero": "existing stage01 gesture/gesture_blink unchanged"
+  }
+}

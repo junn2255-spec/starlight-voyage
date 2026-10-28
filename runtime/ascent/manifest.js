@@ -1,0 +1,1 @@
+window.ASCENT_ART={"size": [1024, 541], "ports": [[-363.78, 56.87, 50.91], [-198.16, 126.47, 59.29]], "exhaustAngle": 156, "sourceCrop": [42, 50, 1631, 890], "assets": {"rear_ship": "runtime/ascent/ship_rear.webp", "bg_ascent": "runtime/ascent/bg_ascent.webp"}};

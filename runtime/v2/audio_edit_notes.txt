@@ -1,0 +1,2 @@
+출처: 기존 Pixabay takeoff / engine / hum 음원 (assets/stage01/audio/manifest.json).
+launch_roar 4.3초, ascent_roar 6.8초. 시간 리샘플링, 저역 기계음과 합성 소음 레이어, 페이드, 피크 -1.1dB, 모노 24kHz 80kbps MP3.

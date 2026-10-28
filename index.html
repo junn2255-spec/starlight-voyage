@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071b2c"><title>별빛 항해 · 지구 출발과 첫 번째 별</title><link rel="preload" href="fonts/Paperlogy-ExtraBold-game.woff2?v=18" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="style.css?v=20"></head>
+<body><main id="game" aria-label="별빛 항해 지구 출발과 두 번째 스테이지 착륙">
+<canvas id="scene" width="1600" height="900" aria-label="3050년 지구에서 출발해 사막의 별에 착륙하는 소년의 우주여행"></canvas>
+<header><img class="brand" src="runtime/atmosphere/title_no_stars.webp" alt="별빛 항해"><div class="tools">
+<button id="sound" aria-label="소리 끄기"><img src="runtime/v2/sound_on.svg" alt=""></button>
+<button id="pause" aria-label="일시정지"><img src="runtime/v2/pause.svg" alt=""></button>
+<button id="fullscreen" aria-label="전체 화면"><img src="runtime/v2/fullscreen.svg" alt=""></button>
+</div></header>
+<div id="badge">지구 3050년</div>
+<div id="intro" hidden aria-hidden="true"></div>
+<div id="guide" hidden role="status" aria-live="polite"><p id="guideText"></p></div>
+<div id="loading" role="status"><img src="runtime/v2/loading.svg" alt="여행을 준비하고 있어요"><b>0%</b></div>
+<button id="audioHint" hidden aria-label="배경음악 시작"><img src="runtime/v2/audio_hint.svg" alt="화면을 터치하면 음악이 시작돼요"></button>
+<div id="dialogue" hidden role="status" aria-live="polite"><p></p></div>
+<button id="action" disabled aria-label="탑승하기"><img src="runtime/v2/button_board.svg" alt="탑승하기"></button>
+<button id="planetReplay" hidden aria-label="착륙 장면 다시 보기"><img src="runtime/v2/button_replay.svg" alt="다시 여행"></button>
+<section id="arrival" hidden aria-label="첫 번째 별 도착"><img src="runtime/stage03/world_hd.webp" alt="확정된 두 번째 시안, 운하 중앙도시"><p role="status" aria-live="polite">첫번째 별에 도착했습니다.</p></section>
+<section id="end" hidden aria-label="첫 번째 여행 완료"><img class="modal-panel" src="runtime/v2/end_panel.svg" alt="첫 번째 여행 완료. 안녕, 새로운 우주! 나의 우주여행이 시작됐다!"><button id="replay" aria-label="다시 여행"><img src="runtime/v2/button_replay.svg" alt="다시 여행"></button></section>
+<section id="paused" hidden aria-label="일시정지"><img class="modal-panel" src="runtime/v2/pause_panel.svg" alt="잠시 쉬어갈까? 준비되면 다시 별을 향해!"><button id="resume" aria-label="계속하기"><img src="runtime/v2/button_resume.svg" alt="계속하기"></button></section>
+<img id="progress" src="runtime/v2/progress0.svg" alt="첫 번째 장면">
+</main><img class="rotate" src="runtime/v2/rotate.svg" alt="화면을 가로로 돌려 주세요"><script src="startgate.js?v=1"></script><script src="assets.js"></script><script src="runtime/ascent/manifest.js"></script><script src="runtime/stage03/manifest.js?v=3"></script><script src="stage3.js?v=8"></script><script src="game.js?v=34"></script></body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
