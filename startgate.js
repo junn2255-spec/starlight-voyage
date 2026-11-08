@@ -9,6 +9,7 @@ document.head.append(style);document.body.append(overlay);
 const button=document.querySelector('#launchFullscreen'),message=document.querySelector('#launchMessage'),fallback=document.querySelector('#launchFallback');
 button.disabled=true;
 window.addEventListener('game-ready',()=>{button.disabled=false;message.textContent='전체화면 전환과 함께 음악과 게임이 시작돼요'},{once:true});
+window.addEventListener('game-load-error',()=>{message.textContent='게임 파일을 불러오지 못했어요. 연결을 확인하고 새로고침해 주세요.'},{once:true});
 function start(){if(gate.started)return;gate.started=true;overlay.remove();window.dispatchEvent(new Event('game-start'));}
 button.onclick=async()=>{
  // Resume the audio context within this actual user gesture, without playing yet.

@@ -1,6 +1,10 @@
 /* Stage 01 v2 — asset UI, Paperlogy ExtraBold, deterministic flight choreography. */
 (()=>{'use strict';if(new URLSearchParams(location.search).get('stage')==='3')return;
 const $=s=>document.querySelector(s), canvas=$('#scene'), ctx=canvas.getContext('2d');
+if (window.matchMedia?.('(pointer: coarse)').matches) {
+ canvas.width=1280; canvas.height=720;
+ ctx.scale(.8,.8);
+}
 const A=window.GAME_ASSETS, images={}, buffers={};
 A.images.bg_city.url='runtime/atmosphere/bg_city_clean.webp';
 A.images.boarding_city_v2.url='runtime/atmosphere/bg_boarding_clean.webp';
@@ -61,17 +65,25 @@ function stopAllEffects(){for(const source of active){try{source.stop()}catch{}}
 function stopLoops(){loops.forEach(s=>{try{s.stop()}catch{}});loops=[]}
 function startLoops(){stopLoops();if(isPlanet()){const wind=play('desert_wind',.18,true);if(wind)loops.push(wind);if(state==='planet_descent'){const descent=play('descent',.66);if(descent)loops.push(descent)}return;}if(!['city','fade','boarding','walking','vanish','closing','ignition'].includes(state))return;for(const[n,v]of[['wind',.09],['hum',.07]]){const s=play(n,v,true);if(s)loops.push(s)}}
 function unlockAudio(){
- if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=muted?0:1;master.connect(ac.destination);
- audioReady=Promise.all(Object.entries(A.audio).filter(([n])=>n!=='music').map(async([n,m])=>{try{buffers[n]=await ac.decodeAudioData(await(await fetch(m.url)).arrayBuffer())}catch(e){console.warn('Audio load failed',n)}})).then(()=>{if(state==='planet_descent'){elapsed=0;planetTime=0}startLoops()})}
+ const AudioEngine=window.AudioContext||window.webkitAudioContext;
+ if(!AudioEngine){musicAttempt();return}
+ if(!ac){ac=new AudioEngine();master=ac.createGain();master.gain.value=muted?0:1;master.connect(ac.destination);
+ audioReady=Promise.all(Object.entries(A.audio).filter(([n])=>n!=='music').map(async([n,m])=>{try{buffers[n]=await ac.decodeAudioData(await(await fetch(m.url)).arrayBuffer())}catch(e){console.warn('Audio load failed',n)}})).then(()=>{startLoops()})}
  if(!paused)ac.resume().catch(()=>{});musicAttempt();return audioReady;
 }
 function setMuted(v){muted=v;if(master)master.gain.value=v?0:1;music.muted=v;assetButton('#sound',v?'sound_off':'sound_on',v?'소리 켜기':'소리 끄기');if(v)$('#audioHint').hidden=true;else unlockAudio()}
 function setPause(v){if(!ready)return;paused=v;$('#paused').hidden=!v;assetButton('#pause',v?'resume':'pause',v?'계속하기':'일시정지');if(v){music.pause();if(ac)ac.suspend().catch(()=>{})}else{if(ac)ac.resume().catch(()=>{});musicAttempt()}last=performance.now()}
-let cabinFrame=null;
+let cabinFrame=null,cabinTimeout;
+function finishCabin(){
+ clearTimeout(cabinTimeout);
+ cabinFrame?.remove();
+ cabinFrame=null;
+ enter('planet_descent');
+}
 window.addEventListener('message',e=>{
  if(!cabinFrame||e.origin!==location.origin||e.source!==cabinFrame.contentWindow)return;
- if(e.data?.type==='cabin-ready'){requestAnimationFrame(()=>{cabinFrame.style.opacity='1'})}
- if(e.data?.type==='cabin-finished'){cabinFrame.remove();cabinFrame=null;canvas.style.opacity='1';enter('planet_descent')}
+ if(e.data?.type==='cabin-ready'){clearTimeout(cabinTimeout);const frame=cabinFrame;requestAnimationFrame(()=>{frame.style.opacity='1'})}
+ if(['cabin-finished','cabin-error'].includes(e.data?.type))finishCabin();
 });
 function enter(next){
  if(next==='cabin'){
@@ -79,6 +91,7 @@ function enter(next){
   for(const id of ['#dialogue','#progress','#audioHint'])$(id).hidden=true;
   const frame=document.createElement('iframe');cabinFrame=frame;frame.title='우주선 조종석 비행';frame.allow='autoplay';
   frame.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:0;z-index:12;opacity:0;transition:opacity 1.2s ease-in-out;background:transparent';
+  cabinTimeout=setTimeout(finishCabin,15000);
   frame.src='cabin.html?sequence=1&embedded=1';$('#game').append(frame);return;
  }
  if(next==='explore'){
@@ -109,7 +122,15 @@ $('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await docum
 // A first touch anywhere unlocks audio without skipping the intro or forcing a second tap.
 document.addEventListener('pointerdown',e=>{if(!ready||e.target.closest('#sound')||e.target.closest('#pause')||paused)return;unlockAudio()},{passive:true});
 document.addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='Escape'){setPause(!paused);return}if(['Enter','Space'].includes(e.code)){if(!paused)unlockAudio();if(e.target.tagName!=='BUTTON'){e.preventDefault();advance()}}});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&ready)setPause(true)});
+let pausedForVisibility=false;
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden&&ready&&!paused&&!['cabin_transition','explore_embedded'].includes(state)){
+  pausedForVisibility=true;setPause(true);
+ }else if(!document.hidden&&pausedForVisibility){
+  pausedForVisibility=false;setPause(false);
+ }
+ last=performance.now();
+});
 function img(n,x,y,w,h,alpha=1){if(!images[n])return;ctx.globalAlpha=clamp(alpha);ctx.drawImage(images[n],x,y,w,h);ctx.globalAlpha=1}
 function background(n,alpha=1){img(n,0,0,1600,900,alpha)}
 function boy(n,x,feet,scale=.85,alpha=1){img(n,x-192*scale,feet-448*scale,384*scale,512*scale,alpha)}
@@ -287,10 +308,21 @@ function drawAscent(){const p=clamp(elapsed/6.8);img('bg_ascent',-20-p*20,-20+p*
 }
 function drawSpace(){background('bg_space');for(let i=0;i<40;i++){ctx.fillStyle=`rgba(255,245,216,${.35+Math.sin(time*2+i)*.25})`;ctx.beginPath();ctx.arc(i*137.5%1600,i*73%620,1.5+i%3,0,Math.PI*2);ctx.fill()}rearShip({cx:1270,cy:270,scale:.2,angle:0,thrust:.6})}
 // Stage 2 uses the very same aligned ship sprites and hatch as Earth boarding.
+let whiteDust;
 function planetDust(front){
  const descent=state==='planet_descent',age=planetTime;
  const power=.75*(descent?smooth(clamp((elapsed-1.8)/3.7)):Math.pow(clamp(1-(age-6)/5),1.4));
- if(power<=0)return;
+ if(power<=0||!images.landing_dust)return;
+ if(!whiteDust){
+  const source=images.landing_dust;
+  whiteDust=document.createElement('canvas');
+  whiteDust.width=source.width;whiteDust.height=source.height;
+  const dust=whiteDust.getContext('2d');
+  dust.drawImage(source,0,0);
+  dust.globalCompositeOperation='source-atop';
+  dust.fillStyle='rgba(244,248,252,.85)';
+  dust.fillRect(0,0,source.width,source.height);
+ }
  ctx.save();
  for(let i=0;i<36;i++){
   const t=(age*.24+i*.137)%1,a=i*2.39996,r=90+t*430;
@@ -299,18 +331,8 @@ function planetDust(front){
   const breathe=1+Math.sin(age*2.4+i)*.09;
   const w=(80+t*150)*breathe,h=w*(.82+Math.sin(age*1.8+i)*.08);
   const rise=Math.sin(t*Math.PI)*55;
-  ctx.save();ctx.filter='grayscale(1) brightness(1.55)';
-  img('landing_dust',x-w*1.45,y-h-rise,w*2.9,h*2,power*(1-t*.65)*.6);
-  ctx.restore();
-  for(let puff=0;puff<3;puff++){
-   const px=x+(puff-1)*w*.52,py=y-rise-h*(.14+Math.sin(age*2+i+puff)*.12);
-   const pr=w*(.38+puff*.07),cloud=ctx.createRadialGradient(px,py,0,px,py,pr);
-   cloud.addColorStop(0,`rgba(255,255,255,${power*(1-t*.7)*.27})`);cloud.addColorStop(.6,`rgba(233,240,245,${power*(1-t*.7)*.16})`);cloud.addColorStop(1,'rgba(233,240,245,0)');
-   ctx.fillStyle=cloud;ctx.fillRect(px-pr,py-pr,pr*2,pr*2);
-  }
-  const g=ctx.createRadialGradient(x,y,0,x,y,w);
-  g.addColorStop(0,`rgba(255,255,255,${power*(1-t)*.24})`);g.addColorStop(.5,`rgba(237,244,248,${power*(1-t)*.13})`);g.addColorStop(1,'rgba(237,244,248,0)');
-  ctx.save();ctx.translate(x,y);ctx.scale(1,h/w);ctx.translate(-x,-y);ctx.fillStyle=g;ctx.fillRect(x-w,y-w,w*2,w*2);ctx.restore();
+  ctx.globalAlpha=power*(1-t*.65)*.6;
+  ctx.drawImage(whiteDust,x-w*1.45,y-h-rise,w*2.9,h*2);
  }
  ctx.restore();
 }
@@ -373,13 +395,17 @@ function update(dt){if(state==='arrival')return;time+=dt;elapsed+=dt;if(isPlanet
  if(state==='vanish'&&stepIndex<0){stepIndex=0;play('metal1',.3)}
  updateParticles(dt);updateFlybys();introUI();
 }
-function tick(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}if(ready&&!paused&&window.GAME_START?.started)update(dt);if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}ctx.clearRect(0,0,1600,900);
+let painted=false;
+function tick(now){
+ const dt=last?Math.min((now-last)/1000,.1):0;last=now;
+ if(document.hidden||!ready||((paused||!window.GAME_START?.started)&&painted)){requestAnimationFrame(tick);return}
+ painted=true;if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}if(!paused&&window.GAME_START?.started)update(dt);if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}ctx.clearRect(0,0,1600,900);
  if(isPlanet())drawPlanet();else if(state==='arrival'){}else if(['loading','city'].includes(state)||state==='fade'&&elapsed<.7)drawCity();else if(state==='ascent')drawAscent();else if(['space','complete'].includes(state))drawSpace();else drawBoard();
  if(state==='fade'){ctx.fillStyle=`rgba(4,15,27,${elapsed<.7?elapsed/.7:1-(elapsed-.7)/.7})`;ctx.fillRect(0,0,1600,900)}requestAnimationFrame(tick)
 }
 let loaded=0;
 const used=Object.entries(A.images).filter(([n])=>!n.startsWith('button_')&&!['board_step','board_enter'].includes(n));
-Promise.all([document.fonts.load('800 24px Paperlogy'),...used.map(([n,m])=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{images[n]=im;$('#loading b').textContent=Math.round(++loaded/used.length*100)+'%';resolve()};im.onerror=()=>reject(new Error(n));im.src=m.url}))]).then(()=>{ready=true;$('#loading').hidden=true;enter(new URLSearchParams(location.search).get('stage')==='2'?'planet_descent':'city');window.dispatchEvent(new Event('game-ready'))}).catch(e=>{$('#loading b').textContent='이미지를 불러오지 못했어요. 새로고침해 주세요.';console.error(e)});
+Promise.all([document.fonts.load('800 24px Paperlogy'),...used.map(([n,m])=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{images[n]=im;$('#loading b').textContent=Math.round(++loaded/used.length*100)+'%';resolve()};im.onerror=()=>reject(new Error(n));im.src=m.url}))]).then(()=>{ready=true;$('#loading').hidden=true;enter(new URLSearchParams(location.search).get('stage')==='2'?'planet_descent':'city');window.dispatchEvent(new Event('game-ready'))}).catch(e=>{$('#loading b').textContent='이미지를 불러오지 못했어요. 새로고침해 주세요.';window.dispatchEvent(new Event('game-load-error'));console.error(e)});
 requestAnimationFrame(tick);
 })();
 
