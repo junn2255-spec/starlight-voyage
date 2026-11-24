@@ -73,3 +73,7 @@ header{top:0}
 /* Fill wide screens with uniformly scaled scenery; retain foreground and UI proportions. */
 #scenery{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #game{background:transparent;z-index:1}
+
+/* Flight sprites can cross the physical screen edges while UI retains its stage layout. */
+#game.wide-flight{overflow:visible}
+#scene.viewport-scene{position:fixed;inset:0;width:100vw;height:100dvh}

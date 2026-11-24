@@ -1,10 +1,9 @@
 /* Stage 01 v2 — asset UI, Paperlogy ExtraBold, deterministic flight choreography. */
 (()=>{'use strict';if(new URLSearchParams(location.search).get('stage')==='3')return;
 const $=s=>document.querySelector(s), canvas=$('#scene'), ctx=canvas.getContext('2d');
-if (window.matchMedia?.('(pointer: coarse)').matches) {
- canvas.width=1280; canvas.height=720;
- ctx.scale(.8,.8);
-}
+const viewBounds={left:0,right:1600,top:0,bottom:900};
+canvas.classList.add('viewport-scene');
+document.querySelector('#game').classList.add('wide-flight');
 const A=window.GAME_ASSETS, images={}, buffers={};
 // The scenery fills the viewport uniformly. Foreground sprites keep the 16:9 stage scale.
 const backdrop=document.createElement('canvas');
@@ -16,6 +15,16 @@ function resizeScenery(){
  const scale=Math.min(1,1280/window.innerWidth);
  backdrop.width=Math.round(window.innerWidth*scale);
  backdrop.height=Math.round(window.innerHeight*scale);
+ canvas.width=backdrop.width;
+ canvas.height=backdrop.height;
+ const stageScale=Math.min(canvas.width/1600,canvas.height/900);
+ const offsetX=(canvas.width-1600*stageScale)/2;
+ const offsetY=(canvas.height-900*stageScale)/2;
+ ctx.setTransform(stageScale,0,0,stageScale,offsetX,offsetY);
+ viewBounds.left=-offsetX/stageScale;
+ viewBounds.right=(canvas.width-offsetX)/stageScale;
+ viewBounds.top=-offsetY/stageScale;
+ viewBounds.bottom=(canvas.height-offsetY)/stageScale;
  if(ready)painted=false;
 }
 window.addEventListener('resize',resizeScenery);
@@ -268,11 +277,11 @@ function flowingWaterfalls(boarding){
   img('waterfall_foam',endX-foamWidth/2,endY-foamWidth*.18,foamWidth,foamWidth*.5,.16);
  });ctx.restore();
 }
-function cityAir(boarding=false){flowingWaterfalls(boarding);glassReflections(boarding);driftingClouds(boarding);for(const f of fleet){const x=((f.start+time*f.speed+f.w)%(1600+f.w))-f.w;img(f.type,x,f.y,f.w,f.w*.75,.96)}}
+function cityAir(boarding=false){flowingWaterfalls(boarding);glassReflections(boarding);driftingClouds(boarding);for(const f of fleet){const span=viewBounds.right-viewBounds.left+f.w;const x=viewBounds.left+((f.start+time*f.speed+f.w-viewBounds.left)%span)-f.w;img(f.type,x,f.y,f.w,f.w*.75,.96)}}
 function drawCity(){background('bg_city');cityAir();shipPose('open',280,632,.62);boy(time%4<.12?'gesture_blink':'gesture',425,835,.6)}
 function flightPose(){
- if(state==='departure'){const p=clamp(elapsed/4.3),travel=1850*p*p;return{cx:1056-travel,cy:600-travel*Math.tan(5*DEG),scale:.95,angle:5,flip:false,thrust:1.15}}
- if(state==='ascent'){const p=clamp(elapsed/6.8),travel=2130*p;return{cx:-230+travel,cy:700-travel*Math.tan(15*DEG),scale:mix(.98,.28,smooth(p)),angle:0,flip:false,rear:true,exhaustAngle:rearArt.exhaustAngle,thrust:1.35}}
+ if(state==='departure'){const p=clamp(elapsed/4.3),travel=(1056-viewBounds.left+800)*p*p;return{cx:1056-travel,cy:600-travel*Math.tan(5*DEG),scale:.95,angle:5,flip:false,thrust:1.15}}
+ if(state==='ascent'){const p=clamp(elapsed/6.8),travel=(viewBounds.right-viewBounds.left+1400)*p;return{cx:viewBounds.left-700+travel,cy:700-travel*Math.tan(15*DEG),scale:mix(.98,.28,smooth(p)),angle:0,flip:false,rear:true,exhaustAngle:rearArt.exhaustAngle,thrust:1.35}}
  return{cx:1056+Math.sin(time*52)*1.6,cy:600+Math.cos(time*47)*1.3,scale:.95,angle:0,flip:false,thrust:clamp(elapsed/2)*.75};
 }
 function nozzleWorld(p,x,y){const fx=p.flip?-x:x,a=p.angle*DEG;return{x:p.cx+p.scale*(fx*Math.cos(a)-y*Math.sin(a)),y:p.cy+p.scale*(fx*Math.sin(a)+y*Math.cos(a))}}
@@ -303,7 +312,7 @@ function updateParticles(dt){
   }
  }
  for(const p of particles){p.age+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.size+=dt*(p.smoke?80:12)*p.scale;if(p.smoke)p.vy-=dt*12}
- particles=particles.filter(p=>p.age<p.life&&p.x>-500&&p.x<2200);if(particles.length>560)particles.splice(0,particles.length-560);
+ particles=particles.filter(p=>p.age<p.life&&p.x>viewBounds.left-700&&p.x<viewBounds.right+700);if(particles.length>560)particles.splice(0,particles.length-560);
 }
 function drawParticles(){
  ctx.save();
@@ -322,12 +331,12 @@ function drawBoard(){background('boarding_city_v2');cityAir(true);drawParticles(
  if(state==='walking'){const t=clamp(elapsed/3.8);boy('walk_'+String(Math.floor(elapsed*8)%8+1).padStart(2,'0'),mix(475,1115,t),850)}
  if(state==='vanish')boy('gesture',1115,850,.85,1-smooth(clamp(elapsed/1.05)));
  img('foreground_flowers',-130,740,440,300);img('foreground_flowers',1450,760,350,260,.9);
- if(state==='departure'&&elapsed>4.05){ctx.fillStyle=`rgba(231,248,255,${clamp((elapsed-4.05)/.25)})`;ctx.fillRect(0,0,1600,900)}
+ if(state==='departure'&&elapsed>4.05){ctx.fillStyle=`rgba(231,248,255,${clamp((elapsed-4.05)/.25)})`;ctx.fillRect(viewBounds.left,viewBounds.top,viewBounds.right-viewBounds.left,viewBounds.bottom-viewBounds.top)}
 }
 function drawAscent(){const p=clamp(elapsed/6.8);paintScenery('bg_ascent');background('bg_space',smooth(clamp((p-.68)/.3)));drawParticles();
  for(let i=0;i<3;i++){const x=(i*670-time*55)%2100-300,y=(i*240+p*780)%1300-220;img('city_mist',x,y,1000,305,(1-p)*.3)}
  rearShip(flightPose());
- if(p<.1){ctx.fillStyle=`rgba(231,248,255,${1-p/.1})`;ctx.fillRect(0,0,1600,900)}
+ if(p<.1){ctx.fillStyle=`rgba(231,248,255,${1-p/.1})`;ctx.fillRect(viewBounds.left,viewBounds.top,viewBounds.right-viewBounds.left,viewBounds.bottom-viewBounds.top)}
 }
 function drawSpace(){background('bg_space');for(let i=0;i<40;i++){ctx.fillStyle=`rgba(255,245,216,${.35+Math.sin(time*2+i)*.25})`;ctx.beginPath();ctx.arc(i*137.5%1600,i*73%620,1.5+i%3,0,Math.PI*2);ctx.fill()}rearShip({cx:1270,cy:270,scale:.2,angle:0,thrust:.6})}
 // Stage 2 uses the very same aligned ship sprites and hatch as Earth boarding.
@@ -408,7 +417,7 @@ function drawPlanet(){
   boy(walking?'walk_'+String(Math.floor(elapsed/1.65*12)%8+1).padStart(2,'0'):time%5<.12?'gesture_blink':'gesture',x,y,1.04,heroAlpha);
  }
  planetDust(true);
- if(descending&&elapsed<.7){ctx.fillStyle=`rgba(5,16,27,${1-elapsed/.7})`;ctx.fillRect(0,0,1600,900)}
+ if(descending&&elapsed<.7){ctx.fillStyle=`rgba(5,16,27,${1-elapsed/.7})`;ctx.fillRect(viewBounds.left,viewBounds.top,viewBounds.right-viewBounds.left,viewBounds.bottom-viewBounds.top)}
 }
 function introUI(){if(state!=='city')return;$('#intro').hidden=elapsed>=2.9;$('#intro').style.opacity=String(Math.min(clamp(elapsed/.6),clamp((2.9-elapsed)/.5)));const card=narration.find(c=>elapsed>=c.start&&elapsed<c.end);$('#guide').hidden=!card;if(card){const p=Math.min(clamp((elapsed-card.start)/.45),clamp((card.end-elapsed)/.45));$('#guideText').textContent=card.text;$('#guide').style.opacity=String(p);$('#guide').style.transform=`translateY(${(1-p)*18}px)`}$('#action').disabled=elapsed<14.6}
 function update(dt){if(state==='arrival')return;time+=dt;elapsed+=dt;if(isPlanet())planetTime+=dt;const durations={fade:1.4,boarding:2.2,walking:3.8,vanish:1.05,closing:3.2,ignition:4,departure:4.3,ascent:6.8,space:2.5,planet_descent:6,planet_settle:2,planet_open:3,planet_reveal:2,planet_walk:1.65,planet_ready:2.5};const next={fade:'boarding',boarding:'walking',walking:'vanish',vanish:'closing',closing:'ignition',ignition:'departure',departure:'ascent',ascent:'cabin',space:'cabin',planet_descent:'planet_settle',planet_settle:'planet_open',planet_open:'planet_reveal',planet_reveal:'planet_walk',planet_walk:'planet_ready',planet_ready:'explore'};
@@ -423,9 +432,9 @@ resizeScenery();
 function tick(now){
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(document.hidden||!ready||((paused||!window.GAME_START?.started)&&painted)){requestAnimationFrame(tick);return}
- painted=true;if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}if(!paused&&window.GAME_START?.started)update(dt);if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}ctx.clearRect(0,0,1600,900);
+ painted=true;if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}if(!paused&&window.GAME_START?.started)update(dt);if(['cabin_transition','explore_embedded'].includes(state)){requestAnimationFrame(tick);return}ctx.clearRect(viewBounds.left,viewBounds.top,viewBounds.right-viewBounds.left,viewBounds.bottom-viewBounds.top);
  if(isPlanet())drawPlanet();else if(state==='arrival'){}else if(['loading','city'].includes(state)||state==='fade'&&elapsed<.7)drawCity();else if(state==='ascent')drawAscent();else if(['space','complete'].includes(state))drawSpace();else drawBoard();
- if(state==='fade'){ctx.fillStyle=`rgba(4,15,27,${elapsed<.7?elapsed/.7:1-(elapsed-.7)/.7})`;ctx.fillRect(0,0,1600,900)}requestAnimationFrame(tick)
+ if(state==='fade'){ctx.fillStyle=`rgba(4,15,27,${elapsed<.7?elapsed/.7:1-(elapsed-.7)/.7})`;ctx.fillRect(viewBounds.left,viewBounds.top,viewBounds.right-viewBounds.left,viewBounds.bottom-viewBounds.top)}requestAnimationFrame(tick)
 }
 let loaded=0;
 const used=Object.entries(A.images).filter(([n])=>!n.startsWith('button_')&&!['board_step','board_enter'].includes(n));
