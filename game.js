@@ -6,6 +6,29 @@ if (window.matchMedia?.('(pointer: coarse)').matches) {
  ctx.scale(.8,.8);
 }
 const A=window.GAME_ASSETS, images={}, buffers={};
+// The scenery fills the viewport uniformly. Foreground sprites keep the 16:9 stage scale.
+const backdrop=document.createElement('canvas');
+backdrop.id='scenery';
+backdrop.setAttribute('aria-hidden','true');
+document.body.prepend(backdrop);
+const scenery=backdrop.getContext('2d',{alpha:false});
+function resizeScenery(){
+ const scale=Math.min(1,1280/window.innerWidth);
+ backdrop.width=Math.round(window.innerWidth*scale);
+ backdrop.height=Math.round(window.innerHeight*scale);
+ if(ready)painted=false;
+}
+window.addEventListener('resize',resizeScenery);
+function paintScenery(name,alpha=1){
+ const image=images[name];
+ if(!image)return;
+ const scale=Math.max(backdrop.width/image.width,backdrop.height/image.height);
+ const width=image.width*scale,height=image.height*scale;
+ scenery.globalAlpha=clamp(alpha);
+ scenery.drawImage(image,(backdrop.width-width)/2,(backdrop.height-height)/2,width,height);
+ scenery.globalAlpha=1;
+}
+
 A.images.bg_city.url='runtime/atmosphere/bg_city_clean.webp';
 A.images.boarding_city_v2.url='runtime/atmosphere/bg_boarding_clean.webp';
 const rearArt=window.ASCENT_ART;
@@ -132,7 +155,7 @@ document.addEventListener('visibilitychange',()=>{
  last=performance.now();
 });
 function img(n,x,y,w,h,alpha=1){if(!images[n])return;ctx.globalAlpha=clamp(alpha);ctx.drawImage(images[n],x,y,w,h);ctx.globalAlpha=1}
-function background(n,alpha=1){img(n,0,0,1600,900,alpha)}
+function background(n,alpha=1){paintScenery(n,alpha)}
 function boy(n,x,feet,scale=.85,alpha=1){img(n,x-192*scale,feet-448*scale,384*scale,512*scale,alpha)}
 // Measured at the exposed outlet lips of each sprite, in ship-local coordinates.
 const enginePorts={ignition:[[218,-118,26],[282,-49,39]],flight:[[220,-108,26],[286,-31,39]]};
@@ -246,7 +269,7 @@ function flowingWaterfalls(boarding){
  });ctx.restore();
 }
 function cityAir(boarding=false){flowingWaterfalls(boarding);glassReflections(boarding);driftingClouds(boarding);for(const f of fleet){const x=((f.start+time*f.speed+f.w)%(1600+f.w))-f.w;img(f.type,x,f.y,f.w,f.w*.75,.96)}}
-function drawCity(){background('bg_city');cityAir();shipPose('open',280,632,.62);boy(time%4<.12?'gesture_blink':'gesture',425,835,.6);const g=ctx.createLinearGradient(0,0,0,900);g.addColorStop(0,'#06253e10');g.addColorStop(1,'#05203d22');ctx.fillStyle=g;ctx.fillRect(0,0,1600,900)}
+function drawCity(){background('bg_city');cityAir();shipPose('open',280,632,.62);boy(time%4<.12?'gesture_blink':'gesture',425,835,.6)}
 function flightPose(){
  if(state==='departure'){const p=clamp(elapsed/4.3),travel=1850*p*p;return{cx:1056-travel,cy:600-travel*Math.tan(5*DEG),scale:.95,angle:5,flip:false,thrust:1.15}}
  if(state==='ascent'){const p=clamp(elapsed/6.8),travel=2130*p;return{cx:-230+travel,cy:700-travel*Math.tan(15*DEG),scale:mix(.98,.28,smooth(p)),angle:0,flip:false,rear:true,exhaustAngle:rearArt.exhaustAngle,thrust:1.35}}
@@ -301,7 +324,7 @@ function drawBoard(){background('boarding_city_v2');cityAir(true);drawParticles(
  img('foreground_flowers',-130,740,440,300);img('foreground_flowers',1450,760,350,260,.9);
  if(state==='departure'&&elapsed>4.05){ctx.fillStyle=`rgba(231,248,255,${clamp((elapsed-4.05)/.25)})`;ctx.fillRect(0,0,1600,900)}
 }
-function drawAscent(){const p=clamp(elapsed/6.8);img('bg_ascent',-20-p*20,-20+p*12,1640,923);background('bg_space',smooth(clamp((p-.68)/.3)));drawParticles();
+function drawAscent(){const p=clamp(elapsed/6.8);paintScenery('bg_ascent');background('bg_space',smooth(clamp((p-.68)/.3)));drawParticles();
  for(let i=0;i<3;i++){const x=(i*670-time*55)%2100-300,y=(i*240+p*780)%1300-220;img('city_mist',x,y,1000,305,(1-p)*.3)}
  rearShip(flightPose());
  if(p<.1){ctx.fillStyle=`rgba(231,248,255,${1-p/.1})`;ctx.fillRect(0,0,1600,900)}
@@ -396,6 +419,7 @@ function update(dt){if(state==='arrival')return;time+=dt;elapsed+=dt;if(isPlanet
  updateParticles(dt);updateFlybys();introUI();
 }
 let painted=false;
+resizeScenery();
 function tick(now){
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(document.hidden||!ready||((paused||!window.GAME_START?.started)&&painted)){requestAnimationFrame(tick);return}
