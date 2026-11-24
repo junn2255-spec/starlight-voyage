@@ -122,7 +122,7 @@ function enter(next){
   state='cabin_transition';$('#game').dataset.state=state;stopAllEffects();music.pause();
   for(const id of ['#dialogue','#progress','#audioHint'])$(id).hidden=true;
   const frame=document.createElement('iframe');cabinFrame=frame;frame.title='우주선 조종석 비행';frame.allow='autoplay';
-  frame.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:0;z-index:12;opacity:0;transition:opacity 1.2s ease-in-out;background:transparent';
+  frame.style.cssText='position:fixed;inset:0;width:100vw;height:100dvh;border:0;z-index:12;opacity:0;transition:opacity 1.2s ease-in-out;background:transparent';
   cabinTimeout=setTimeout(finishCabin,15000);
   frame.src='cabin.html?sequence=1&embedded=1';$('#game').append(frame);return;
  }
